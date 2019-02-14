@@ -2,19 +2,18 @@
 #include "stat.h"
 #include "user.h"
 
-char buf[512];
-char prev[512];
-char line[512];
-char copyPrev[512];
-char copyLine[512];
+char buf[2048];
+char prev[2048];
+char line[2048];
+char copyPrev[2048];
+char copyLine[2048];
 
-void toLower(char *str){
-    while(*str != '\0'){
-        if(*str >=65 && *str<=90){
-            // It fails in the below assignment
-            *str = *str + 32;
+void toLower(char *lineLower){
+    while(*lineLower != '\0'){
+        if(*lineLower >=65 && *lineLower<=90){
+            *lineLower = *lineLower + 32;
         }
-        str++;
+        lineLower++;
     }
 }
 
@@ -25,18 +24,15 @@ void uniq(int fd, int flags[]){
 
   int count;
   int countFlag;
-  int dupli;
+  int dupliFlag;
   int caseFlag;
 
   c = 0;
   count = 0;
 
   countFlag = flags[0];
-  dupli = flags[1];
+  dupliFlag = flags[1];
   caseFlag = flags[2];
-
-
-
 
   while((n = read(fd, buf, sizeof(buf))) > 0){
     for(i=0; i<n; i++){
@@ -47,16 +43,11 @@ void uniq(int fd, int flags[]){
       else{
         if(caseFlag != 1){
           if (strcmp(prev, line) != 0 && prev[0] != '\0'){
-            if (dupli == 1 && count > 1){
-              if(countFlag == 1){
-                printf(1, "%d %s\n", count, prev);
-              }
-              else {
+            if (dupliFlag == 1 && count > 1){
                 printf(1, "%s\n", prev);
-              }
             }
 
-            else if (dupli != 1){
+            else if (dupliFlag != 1){
               if(countFlag == 1){
                 printf(1, "%d %s\n", count, prev);
               }
@@ -74,16 +65,11 @@ void uniq(int fd, int flags[]){
           toLower(copyPrev);
 
           if (strcmp(copyPrev, copyLine) != 0 && prev[0] != '\0'){
-            if (dupli == 1 && count > 1){
-              if(countFlag == 1){
-                printf(1, "%d %s\n", count, prev);
-              }
-              else {
+            if (dupliFlag == 1 && count > 1){
                 printf(1, "%s\n", prev);
-              }
             }
 
-            else if (dupli != 1){
+            else if (dupliFlag != 1){
               if(countFlag == 1){
                 printf(1, "%d %s\n", count, prev);
               }
@@ -108,16 +94,11 @@ void uniq(int fd, int flags[]){
 
   if(caseFlag != 1){
     if (strcmp(prev, line) != 0 && prev[0] != '\0'){
-      if (dupli == 1 && count > 1){
-        if(countFlag == 1){
-          printf(1, "%d %s\n", count, prev);
-        }
-        else {
+      if (dupliFlag == 1 && count > 1){
           printf(1, "%s\n", prev);
-        }
       }
 
-      else if (dupli != 1){
+      else if (dupliFlag != 1){
         if(countFlag == 1){
           printf(1, "%d %s\n", count, prev);
         }
@@ -135,16 +116,11 @@ void uniq(int fd, int flags[]){
     toLower(copyPrev);
 
     if (strcmp(copyPrev, copyLine) != 0 && prev[0] != '\0'){
-      if (dupli == 1 && count > 1){
-        if(countFlag == 1){
-          printf(1, "%d %s\n", count, prev);
-        }
-        else {
+      if (dupliFlag == 1 && count > 1){
           printf(1, "%s\n", prev);
-        }
       }
 
-      else if (dupli != 1){
+      else if (dupliFlag != 1){
         if(countFlag == 1){
           printf(1, "%d %s\n", count, prev);
         }
@@ -190,6 +166,11 @@ int main(int argc, char* argv[]){
 
       else if ((fd = open(argv[i], 0)) < 0){
         printf(1, "uniq: cannot open %s\n", argv[i]);
+        exit();
+      }
+
+      if (flags[0] == 1 && flags[1] == 1){
+        printf(1, "uniq: cannot call -c and -d together\n");
         exit();
       }
 
